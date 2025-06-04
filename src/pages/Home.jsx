@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { useEffect } from 'react';
 import MainLayout from '../components/layout/MainLayout';
-
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
 
 const Home = () => {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await api. get('/auth/me');
+        const response = await api.get('/auth/me');
         console.log(response.data);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -19,10 +20,39 @@ const Home = () => {
     };
     fetchProfile();
   }, []);
-  
+
   return (
     <MainLayout>
-     <h1>Home</h1>
+      <section className="hero bg-blue-100 py-16 text-center">
+        <h1 className="text-4xl font-bold mb-4">Bienvenue à l'Établissement Scolaire</h1>
+        <p className="text-xl mb-8">Du maternelle au secondaire, une éducation de qualité pour votre enfant</p>
+        <img
+          src="/assets/images/school_building.jpg"
+          alt="École"
+          className="mx-auto mb-8 max-w-full h-auto rounded shadow-lg"
+        />
+        <Button href="/Registration/StudentRegistration" className="px-6 py-3 text-lg">
+          Inscrire mon enfant
+        </Button>
+      </section>
+
+      <section className="info-cards grid grid-cols-1 md:grid-cols-3 gap-8 py-16 px-4 max-w-6xl mx-auto">
+        <Card>
+          <h2 className="text-2xl font-semibold mb-2">Inscription à distance</h2>
+          <p>Permettez aux parents d'inscrire leurs enfants facilement depuis chez eux, en toute sécurité.</p>
+        </Card>
+        <Card>
+          <h2 className="text-2xl font-semibold mb-2">Facturation automatique</h2>
+          <p>Les factures sont générées automatiquement lors de la validation des inscriptions.</p>
+        </Card>
+        <Card>
+          <h2 className="text-2xl font-semibold mb-2">Résultats trimestriels</h2>
+          <p>Consultez les résultats trimestriels des élèves en toute transparence.</p>
+          <Button href="/Academic/StudentResults" className="mt-4 px-4 py-2">
+            Voir les résultats
+          </Button>
+        </Card>
+      </section>
     </MainLayout>
   );
 };
