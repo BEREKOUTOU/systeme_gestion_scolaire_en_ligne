@@ -23,15 +23,15 @@ const Home = () => {
 
   return (
     <MainLayout>
-      <section className="hero bg-blue-100 py-16 text-center">
-        <h1 className="text-4xl font-bold mb-4">Bienvenue à l'Établissement Scolaire</h1>
-        <p className="text-xl mb-8">Du maternelle au secondaire, une éducation de qualité pour votre enfant</p>
-        <img
-          src="/assets/images/school_building.jpg"
-          alt="École"
-          className="mx-auto mb-8 max-w-full h-auto rounded shadow-lg"
-        />
-        <Button href="/Registration/StudentRegistration" className="px-6 py-3 text-lg">
+      <section
+        className="hero py-32 text-center text-white bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/assets/images/Ecole.png')`,
+        }}
+      >
+        <h1 className="text-5xl font-bold mb-4 drop-shadow-lg">Bienvenue à l'Établissement Scolaire</h1>
+        <p className="text-2xl mb-8 drop-shadow-lg">Du maternelle au secondaire, une éducation de qualité pour votre enfant</p>
+        <Button href="/Registration/StudentRegistration" className="px-8 py-4 text-lg font-semibold drop-shadow-lg bg-blue-600 hover:bg-blue-700 rounded">
           Inscrire mon enfant
         </Button>
       </section>
