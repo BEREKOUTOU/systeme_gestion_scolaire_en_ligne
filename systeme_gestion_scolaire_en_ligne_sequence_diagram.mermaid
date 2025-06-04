@@ -1,0 +1,190 @@
+sequenceDiagram
+    participant Parent
+    participant Frontend
+    participant AuthService
+    participant RegistrationService
+    participant DocumentService
+    participant BillingService
+    participant PaymentGateway
+    participant GradeService
+    participant NotificationService
+    participant Database
+    participant FileStorage
+    
+    %% Processus d'inscription
+    Note over Parent, NotificationService: Processus d'inscription d'un élève
+    
+    Parent->>Frontend: Accéder au portail d'inscription
+    Frontend->>AuthService: Vérifier authentification
+    AuthService->>Database: Vérifier identifiants
+    Database-->>AuthService: Statut de connexion
+    
+    alt Non connecté
+        AuthService-->>Frontend: Rediriger vers connexion
+        Frontend->>Parent: Afficher formulaire de connexion
+        Parent->>Frontend: Soumettre identifiants
+        Frontend->>AuthService: Valider identifiants
+        AuthService->>Database: Enregistrer session
+    end
+    
+    AuthService-->>Frontend: Session validée
+    Frontend->>Parent: Afficher formulaire d'inscription
+    Parent->>Frontend: Remplir informations élève
+    Frontend->>RegistrationService: Créer nouvelle inscription
+    RegistrationService->>Database: Enregistrer données de base
+    Database-->>RegistrationService: Confirmation enregistrement
+    
+    Parent->>Frontend: Téléverser documents requis
+    Frontend->>DocumentService: Soumettre documents
+    DocumentService->>FileStorage: Stocker documents sécurisés
+    FileStorage-->>DocumentService: URLs documents stockés
+    DocumentService->>Database: Enregistrer références documents
+    Database-->>DocumentService: Confirmation enregistrement
+    
+    Parent->>Frontend: Finaliser inscription
+    Frontend->>RegistrationService: Soumettre inscription complète
+    RegistrationService->>Database: Mettre à jour statut inscription
+    Database-->>RegistrationService: Confirmation mise à jour
+    RegistrationService->>NotificationService: Notifier administrateur
+    NotificationService-->>Database: Enregistrer notification
+    
+    %% Processus de validation administrative
+    Note over Parent, NotificationService: Processus de validation administrative
+    
+    participant Admin
+    
+    NotificationService->>Admin: Envoyer notification
+    Admin->>Frontend: Accéder aux inscriptions en attente
+    Frontend->>RegistrationService: Récupérer liste inscriptions
+    RegistrationService->>Database: Requête inscriptions
+    Database-->>RegistrationService: Liste inscriptions
+    RegistrationService-->>Frontend: Afficher inscriptions
+    
+    Admin->>Frontend: Sélectionner inscription
+    Frontend->>RegistrationService: Demander détails inscription
+    RegistrationService->>Database: Requête détails
+    Database-->>RegistrationService: Détails inscription
+    RegistrationService-->>Frontend: Afficher détails
+    
+    Admin->>Frontend: Consulter documents
+    Frontend->>DocumentService: Demander documents
+    DocumentService->>FileStorage: Récupérer documents
+    FileStorage-->>DocumentService: Documents
+    DocumentService-->>Frontend: Afficher documents
+    
+    Admin->>Frontend: Valider inscription
+    Frontend->>RegistrationService: Soumettre validation
+    RegistrationService->>Database: Mettre à jour statut (Validé)
+    Database-->>RegistrationService: Confirmation mise à jour
+    
+    %% Génération automatique de facture
+    Note over Parent, NotificationService: Génération automatique de facture
+    
+    RegistrationService->>BillingService: Demander génération facture
+    BillingService->>Database: Récupérer structure tarifaire
+    Database-->>BillingService: Données tarifaires
+    BillingService->>BillingService: Calculer montant facture
+    BillingService->>Database: Enregistrer nouvelle facture
+    Database-->>BillingService: Confirmation enregistrement
+    
+    BillingService->>NotificationService: Notifier parent
+    NotificationService->>Database: Enregistrer notification
+    NotificationService->>Parent: Envoyer email facture
+    
+    %% Processus de paiement
+    Note over Parent, NotificationService: Processus de paiement
+    
+    Parent->>Frontend: Accéder au portail de paiement
+    Frontend->>BillingService: Récupérer factures impayées
+    BillingService->>Database: Requête factures
+    Database-->>BillingService: Données factures
+    BillingService-->>Frontend: Afficher factures
+    
+    Parent->>Frontend: Sélectionner facture à payer
+    Frontend->>BillingService: Demander détails paiement
+    BillingService->>Database: Récupérer détails facture
+    Database-->>BillingService: Détails facture
+    BillingService-->>Frontend: Afficher montant et options
+    
+    Parent->>Frontend: Choisir méthode paiement
+    Frontend->>PaymentGateway: Initialiser transaction
+    PaymentGateway-->>Frontend: Formulaire paiement sécurisé
+    Parent->>PaymentGateway: Soumettre informations paiement
+    PaymentGateway->>PaymentGateway: Traiter paiement
+    
+    alt Paiement réussi
+        PaymentGateway-->>BillingService: Confirmation paiement
+        BillingService->>Database: Enregistrer paiement
+        Database-->>BillingService: Confirmation enregistrement
+        BillingService->>BillingService: Générer reçu
+        BillingService->>NotificationService: Notifier confirmation
+        NotificationService->>Parent: Envoyer confirmation et reçu
+    else Paiement échoué
+        PaymentGateway-->>BillingService: Échec transaction
+        BillingService->>NotificationService: Notifier échec
+        NotificationService->>Parent: Informer échec paiement
+    end
+    
+    %% Gestion des résultats scolaires
+    Note over Parent, NotificationService: Gestion des résultats scolaires
+    
+    participant Teacher
+    
+    Teacher->>Frontend: Accéder interface notes
+    Frontend->>AuthService: Vérifier authentification
+    AuthService->>Database: Vérifier droits enseignant
+    Database-->>AuthService: Confirmer droits
+    
+    Frontend->>GradeService: Récupérer classes enseignant
+    GradeService->>Database: Requête classes
+    Database-->>GradeService: Liste classes
+    GradeService-->>Frontend: Afficher classes
+    
+    Teacher->>Frontend: Sélectionner classe et trimestre
+    Frontend->>GradeService: Demander liste élèves
+    GradeService->>Database: Requête élèves
+    Database-->>GradeService: Liste élèves
+    GradeService-->>Frontend: Afficher grille de notes
+    
+    Teacher->>Frontend: Saisir notes et commentaires
+    Frontend->>GradeService: Soumettre notes
+    GradeService->>Database: Enregistrer notes
+    Database-->>GradeService: Confirmation enregistrement
+    
+    Teacher->>Frontend: Finaliser saisie trimestre
+    Frontend->>GradeService: Soumettre validation
+    GradeService->>Database: Marquer notes comme validées
+    Database-->>GradeService: Confirmation validation
+    
+    GradeService->>GradeService: Générer bulletins
+    GradeService->>Database: Enregistrer bulletins
+    Database-->>GradeService: Confirmation enregistrement
+    
+    GradeService->>NotificationService: Notifier disponibilité résultats
+    NotificationService->>Database: Enregistrer notifications
+    NotificationService->>Parent: Envoyer notification résultats
+    
+    %% Consultation des résultats
+    Note over Parent, NotificationService: Consultation des résultats
+    
+    Parent->>Frontend: Accéder espace résultats
+    Frontend->>AuthService: Vérifier authentification
+    AuthService->>Database: Vérifier droits parent
+    Database-->>AuthService: Confirmer droits
+    
+    Frontend->>GradeService: Récupérer enfants du parent
+    GradeService->>Database: Requête relation parent-élèves
+    Database-->>GradeService: Liste élèves
+    GradeService-->>Frontend: Afficher liste enfants
+    
+    Parent->>Frontend: Sélectionner enfant et trimestre
+    Frontend->>GradeService: Demander bulletin
+    GradeService->>Database: Requête bulletin
+    Database-->>GradeService: Données bulletin
+    GradeService-->>Frontend: Afficher bulletin
+    
+    Parent->>Frontend: Demander téléchargement PDF
+    Frontend->>GradeService: Générer PDF
+    GradeService->>GradeService: Créer document PDF
+    GradeService-->>Frontend: Bulletin PDF
+    Frontend-->>Parent: Téléchargement bulletin

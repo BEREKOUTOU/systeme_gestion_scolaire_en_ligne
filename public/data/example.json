@@ -1,0 +1,7 @@
+{
+  "database": {
+    "password": "mySecretPassword",
+    "default_email": "admin@example.com"
+  }
+}
+
