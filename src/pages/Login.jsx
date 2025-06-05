@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
+
+
+const User_Mail='admin@example.com';
+const User_Password='12345678';
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
+    if (formData.email === User_Mail && formData.password === User_Password) {
+      localStorage.setItem('token', 'admin-token');
+      navigate('/dashboard');
+    } else {
+      alert('Invalid email or password');
+    }
   };
 
   const handleChange = (e) => {
